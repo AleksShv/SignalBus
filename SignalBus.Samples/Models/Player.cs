@@ -5,18 +5,15 @@ using SignalBus.Samples.Signals;
 
 namespace SignalBus.Samples.Models;
 
-public partial class Player
+public partial class Player : DistributedModel
 {
-    private readonly ISignalBus _bus;
-
     private readonly Wallet _wallet;
     private readonly List<Item> _items = new();
 
     public Player(ISignalBus bus, Wallet wallet)
+        : base(bus)
     {
-        _bus = bus;
         _wallet = wallet;
-        RegisterSignalHandlers();
     }
 
     public IReadOnlyList<Item> Items => _items.AsReadOnly();
@@ -26,22 +23,14 @@ public partial class Player
     public void CollectCoins(int amount)
         => _wallet.AddCoins(amount);
 
-    ~Player()
+    protected override void RegisterSignalHandlers()
     {
-        UnregisterSignalHandlers();
-    }
-}
-
-public partial class Player : ISignalHandlersHolder
-{
-    public void RegisterSignalHandlers()
-    {
-        _bus.Register<ProductSuccessfullyBuyedSignal>(OnProductSuccessfullyBuyed);
+        Bus.Register<ProductSuccessfullyBuyedSignal>(OnProductSuccessfullyBuyed);
     }
 
-    public void UnregisterSignalHandlers()
+    protected override void UnregisterSignalHandlers()
     {
-        _bus.Unregister<ProductSuccessfullyBuyedSignal>(OnProductSuccessfullyBuyed);
+        Bus.Unregister<ProductSuccessfullyBuyedSignal>(OnProductSuccessfullyBuyed);
     }
 
     private void OnProductSuccessfullyBuyed(ProductSuccessfullyBuyedSignal signal)

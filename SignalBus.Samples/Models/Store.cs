@@ -1,13 +1,11 @@
 ﻿using SignalBus.Contracts;
-using SignalBus.Samples.Contracts;
 using SignalBus.Samples.Data;
 using SignalBus.Samples.Signals;
 
 namespace SignalBus.Samples.Models;
 
-public partial class Store
+public partial class Store : DistributedModel
 {
-    private readonly ISignalBus _bus;
     private readonly List<Product> _products = new()
     {
         new Product
@@ -25,36 +23,26 @@ public partial class Store
     };
 
     public Store(ISignalBus bus)
-    {
-        _bus = bus;
-        RegisterSignalHandlers();
-    }
+        : base(bus)
+    { }
 
     public IReadOnlyList<Product> Products => _products.AsReadOnly();
 
     public void BuyProduct(Product product)
     {
-        _bus.Trigger(new ProductPrepaedForBuyingSignal(product));
+        Bus.Trigger(new ProductPrepaedForBuyingSignal(product));
     }
 
-    ~Store()
+    protected override void RegisterSignalHandlers()
     {
-        UnregisterSignalHandlers();
-    }
-}
-
-public partial class Store : ISignalHandlersHolder
-{
-    public void RegisterSignalHandlers()
-    {
-        _bus.Register<WalletAmountChangedSignal>(OnWalletAmountChanged);
-        _bus.Register<ProductSuccessfullyBuyedSignal>(OnProductSuccessfullyBued);
+        Bus.Register<WalletAmountChangedSignal>(OnWalletAmountChanged);
+        Bus.Register<ProductSuccessfullyBuyedSignal>(OnProductSuccessfullyBued);
     }
 
-    public void UnregisterSignalHandlers()
+    protected override void UnregisterSignalHandlers()
     {
-        _bus.Unregister<WalletAmountChangedSignal>(OnWalletAmountChanged);
-        _bus.Unregister<ProductSuccessfullyBuyedSignal>(OnProductSuccessfullyBued);
+        Bus.Unregister<WalletAmountChangedSignal>(OnWalletAmountChanged);
+        Bus.Unregister<ProductSuccessfullyBuyedSignal>(OnProductSuccessfullyBued);
     }
 
     private void OnWalletAmountChanged(WalletAmountChangedSignal signal)

@@ -4,15 +4,11 @@ using SignalBus.Samples.Signals;
 
 namespace SignalBus.Samples.Models;
 
-public partial class Wallet : IReadOnlyWallet
+public partial class Wallet : DistributedModel, IReadOnlyWallet
 {
-    private readonly ISignalBus _bus;
-
     public Wallet(ISignalBus bus)
-    {
-        _bus = bus;
-        RegisterSignalHandlers();
-    }
+        : base(bus)
+    { }
 
     public int CoinsAmount { get; private set; }
 
@@ -20,25 +16,17 @@ public partial class Wallet : IReadOnlyWallet
     {
         ArgumentOutOfRangeException.ThrowIfNegative(amount);
         CoinsAmount += amount;
-        _bus.Trigger(new WalletAmountChangedSignal(CoinsAmount));
+        Bus.Trigger(new WalletAmountChangedSignal(CoinsAmount));
     }
 
-    ~Wallet()
+    protected override void RegisterSignalHandlers()
     {
-        UnregisterSignalHandlers();
-    }
-}
-
-public partial class Wallet : ISignalHandlersHolder
-{
-    public void RegisterSignalHandlers()
-    {
-        _bus.Register<ProductPrepaedForBuyingSignal>(OnProductPrepaedForBuying);
+        Bus.Register<ProductPrepaedForBuyingSignal>(OnProductPrepaedForBuying);
     }
 
-    public void UnregisterSignalHandlers()
+    protected override void UnregisterSignalHandlers()
     {
-        _bus.Unregister<ProductPrepaedForBuyingSignal>(OnProductPrepaedForBuying);
+        Bus.Unregister<ProductPrepaedForBuyingSignal>(OnProductPrepaedForBuying);
     }
 
     private void OnProductPrepaedForBuying(ProductPrepaedForBuyingSignal signal)
@@ -48,7 +36,7 @@ public partial class Wallet : ISignalHandlersHolder
         if (residual >= 0)
         {
             CoinsAmount = residual;
-            _bus.Trigger(new ProductSuccessfullyBuyedSignal(signal.Product));
+            Bus.Trigger(new ProductSuccessfullyBuyedSignal(signal.Product));
         }
     }
 }
