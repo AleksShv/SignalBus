@@ -5,7 +5,7 @@ using SignalBus.Samples.Signals;
 
 namespace SignalBus.Samples.Models;
 
-public partial class Player : DistributedModel
+public sealed class Player : DistributedModel
 {
     private readonly Wallet _wallet;
     private readonly List<Item> _items = new();
@@ -17,7 +17,6 @@ public partial class Player : DistributedModel
     }
 
     public IReadOnlyList<Item> Items => _items.AsReadOnly();
-
     public IReadOnlyWallet Wallet => _wallet;
 
     public void CollectCoins(int amount)

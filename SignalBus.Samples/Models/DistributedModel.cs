@@ -2,7 +2,7 @@
 
 namespace SignalBus.Samples.Models;
 
-public class DistributedModel
+public abstract class DistributedModel
 {
     protected readonly ISignalBus Bus;
 

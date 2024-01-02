@@ -4,7 +4,7 @@ using SignalBus.Samples.Signals;
 
 namespace SignalBus.Samples.Models;
 
-public partial class Store : DistributedModel
+public sealed class Store : DistributedModel
 {
     private readonly List<Product> _products = new()
     {

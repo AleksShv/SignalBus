@@ -4,7 +4,7 @@ using SignalBus.Samples.Signals;
 
 namespace SignalBus.Samples.Models;
 
-public partial class Wallet : DistributedModel, IReadOnlyWallet
+public sealed class Wallet : DistributedModel, IReadOnlyWallet
 {
     public Wallet(ISignalBus bus)
         : base(bus)
